@@ -51,7 +51,7 @@ regex_cleaners = [
     (re.compile(r'([.*+?^${}()|[\]\\])'), r"\\\1"),  # escape special symbols
     (re.compile(r'\\\*'), r".*"),  # replace wildcards by .*
     # process separator placeholders (all ANSI characters but alphanumeric characters and _%.-)
-    (re.compile(r'\\\^'), r"(?:[\\x00-\\x24\\x26-\\x2C\\x2F\\x3A-\\x40\\x5B-\\x5E\\x60\\x7B-\\x7F]|$)"),
+    (re.compile(r'\\\^'), r"(?:[\\x00-\\x24\\x26-\\x2C\\x2F\\x3A-\\x40\\x5B-\\x5E\\x60\\x7B-\\x7F])"),
     #(re.compile(r'\\\|\\\|'), r"^[\\w\\-]+:\\/+(?!\\/)(?:[^\\/]+\\.)?"), # process extended anchor at expression start
     (re.compile(r'^\\\|'), r"^"),  # process anchor at expression start
     (re.compile(r'\\\|$'), r"$"),  # process anchor at expression end
@@ -171,10 +171,14 @@ def regex_filter(origText, regexpSource, contentType, matchCase, domains, thirdP
                 unl.append(d[1:])
             else:
                 ifd.append(d)
-        if ifd:
-            filter['trigger']['if-domain'] = ifd
-        if unl:
-            filter['trigger']['unless-domain'] = unl
+        if ifd and unl:
+            # Invalid rule, needs a split
+            print('Invalid: %s (Needs rule split due to mixed domain restrictions)' % origText)
+        else:
+            if ifd:
+                filter['trigger']['if-domain'] = ifd
+            if unl:
+                filter['trigger']['unless-domain'] = unl
 
     if contentType:
         rt = []
@@ -238,6 +242,7 @@ def regex_from_text(text):
     if match:
         options = match.group(1).upper().split(",")
         text = text[:dollar_pos]
+        invalidCount = 0
         for option in options:
             value = None
             separatorIndex = option.find("=")
@@ -285,8 +290,13 @@ def regex_from_text(text):
                 sitekeys = value
 
             else:
-                print('Invalid: %s' % origText)
-                return None
+                invalidCount += 1
+                pass
+                
+        # If there's no valid options, skip the rule
+        if options and len(options) - invalidCount == 0:
+            print('Invalid: %s' % origText)
+            return None
 
     if blocking:
         return blocking_filter(origText, text, contentType, matchCase, domains, thirdParty, sitekeys, collapse)
