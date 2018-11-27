@@ -126,6 +126,7 @@ def elem_hide_from_text(text, domain, isException, tagName, attrRules, selector)
 
 def regex_filter(origText, regexpSource, contentType, matchCase, domains, thirdParty, sitekeys):
     anchor = False
+    requires_scheme = True
     length = len(regexpSource)
     # already a regex
     if length >= 2 and regexpSource[0] == '/' and regexpSource[-1] == '/':
@@ -135,6 +136,9 @@ def regex_filter(origText, regexpSource, contentType, matchCase, domains, thirdP
         if regex[0:2] == '||':
             regex = regex[2:]
             anchor = True
+        elif regex[0] == '|':
+            regex = regex[1:]
+            requires_scheme = False
         for r in regex_cleaners:
             #print('In: %s' % regex)
             regex = r[0].sub(r[1], regex)
@@ -144,7 +148,8 @@ def regex_filter(origText, regexpSource, contentType, matchCase, domains, thirdP
 
     if regex[0:3] != '://':
         if not anchor:
-            regex = '^https?://.*' + regex
+            if requires_scheme:
+                regex = '^https?://.*' + regex
         else:
             regex = '^https?://' + regex
 
