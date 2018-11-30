@@ -163,6 +163,8 @@ def regex_filter(origText, regexpSource, contentType, matchCase, domains, thirdP
             'type': 'block'
         }
     }
+    if matchCase: 
+        filter['trigger']['url-filter-is-case-sensitive'] = True
     if thirdParty:
         filter['trigger']['load-type'] = ['third-party']
     if domains:
