@@ -22,7 +22,6 @@ RegExpFilter_typeMap = {
     'SCRIPT': 2,
     'IMAGE': 4,
     'STYLESHEET': 8,
-    'OBJECT': 16,
     'DOCUMENT': 64,
     'XBL': 1,
     'XMLHTTPREQUEST': 2048,
