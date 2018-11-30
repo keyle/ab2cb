@@ -26,7 +26,6 @@ RegExpFilter_typeMap = {
     'SUBDOCUMENT': 32,
     'DOCUMENT': 64,
     'XBL': 1,
-    'PING': 1,
     'XMLHTTPREQUEST': 2048,
     'OBJECT_SUBREQUEST': 4096,
     'DTD': 1,
@@ -51,7 +50,7 @@ regex_cleaners = [
     (re.compile(r'([.*+?^${}()|[\]\\])'), r"\\\1"),  # escape special symbols
     (re.compile(r'\\\*'), r".*"),  # replace wildcards by .*
     # process separator placeholders (all ANSI characters but alphanumeric characters and _%.-)
-    (re.compile(r'\\\^'), r"(?:[\\x00-\\x24\\x26-\\x2C\\x2F\\x3A-\\x40\\x5B-\\x5E\\x60\\x7B-\\x7F])"),
+#    (re.compile(r'\\\^'), r"(?:[\\x00-\\x24\\x26-\\x2C\\x2F\\x3A-\\x40\\x5B-\\x5E\\x60\\x7B-\\x7F])|$"),
     #(re.compile(r'\\\|\\\|'), r"^[\\w\\-]+:\\/+(?!\\/)(?:[^\\/]+\\.)?"), # process extended anchor at expression start
     (re.compile(r'^\\\|'), r"^"),  # process anchor at expression start
     (re.compile(r'\\\|$'), r"$"),  # process anchor at expression end
@@ -126,8 +125,10 @@ def elem_hide_from_text(text, domain, isException, tagName, attrRules, selector)
 
 def regex_filter(origText, regexpSource, contentType, matchCase, domains, thirdParty, sitekeys):
     anchor = False
-    requires_scheme = True
+    requires_scheme = False
     length = len(regexpSource)
+    if length == 0: 
+        return
     # already a regex
     if length >= 2 and regexpSource[0] == '/' and regexpSource[-1] == '/':
         regex = regexpSource[1:-1]
@@ -135,10 +136,12 @@ def regex_filter(origText, regexpSource, contentType, matchCase, domains, thirdP
         regex = regexpSource
         if regex[0:2] == '||':
             regex = regex[2:]
-            anchor = True
+            requires_scheme = True
         elif regex[0] == '|':
             regex = regex[1:]
-            requires_scheme = False
+            anchor = True
+        if regex[-1] == '^':
+            regex = regex[0:-1]
         for r in regex_cleaners:
             #print('In: %s' % regex)
             regex = r[0].sub(r[1], regex)
@@ -146,12 +149,11 @@ def regex_filter(origText, regexpSource, contentType, matchCase, domains, thirdP
 
         #print('Before: %s  After: %s' % (regexpSource, regex))
 
-    if regex[0:3] != '://':
-        if not anchor:
-            if requires_scheme:
-                regex = '^https?://.*' + regex
-        else:
-            regex = '^https?://' + regex
+    if regex[0:3] != '://' and requires_scheme:
+        regex = '^[^:]+:(//)?([^/]+.)?' + regex
+        
+    if anchor:
+        regex = "^" + regex
 
     filter = {
         'trigger': {
@@ -242,7 +244,6 @@ def regex_from_text(text):
     if match:
         options = match.group(1).upper().split(",")
         text = text[:dollar_pos]
-        invalidCount = 0
         for option in options:
             value = None
             separatorIndex = option.find("=")
@@ -290,13 +291,8 @@ def regex_from_text(text):
                 sitekeys = value
 
             else:
-                invalidCount += 1
-                pass
-                
-        # If there's no valid options, skip the rule
-        if options and len(options) - invalidCount == 0:
-            print('Invalid: %s' % origText)
-            return None
+                print('Invalid: %s' % origText)
+                return None
 
     if blocking:
         return blocking_filter(origText, text, contentType, matchCase, domains, thirdParty, sitekeys, collapse)
