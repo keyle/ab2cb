@@ -22,6 +22,7 @@ RegExpFilter_typeMap = {
     'SCRIPT': 2,
     'IMAGE': 4,
     'STYLESHEET': 8,
+    'SUBDOCUMENT': 32,
     'DOCUMENT': 64,
     'XBL': 1,
     'XMLHTTPREQUEST': 2048,
@@ -184,7 +185,7 @@ def regex_filter(origText, regexpSource, contentType, matchCase, domains, thirdP
 
     if contentType:
         rt = []
-        if contentType & RegExpFilter_typeMap['DOCUMENT']:
+        if contentType & RegExpFilter_typeMap['DOCUMENT'] or contentType & RegExpFilter_typeMap['SUBDOCUMENT']:
             rt.append('document')
         if contentType & RegExpFilter_typeMap['IMAGE']:
             rt.append('image')
