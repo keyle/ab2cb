@@ -62,9 +62,6 @@ regex_cleaners = [
     (re.compile(r'\^\|$'), r"^"),  # remove anchors following separator placeholder
     (re.compile(r'([.*+?^${}()|[\]\\])'), r"\\\1"),  # escape special symbols
     (re.compile(r'\\\*'), r".*"),  # replace wildcards by .*
-    # process separator placeholders (all ANSI characters but alphanumeric characters and _%.-)
-#    (re.compile(r'\\\^'), r"(?:[\\x00-\\x24\\x26-\\x2C\\x2F\\x3A-\\x40\\x5B-\\x5E\\x60\\x7B-\\x7F])|$"),
-    #(re.compile(r'\\\|\\\|'), r"^[\\w\\-]+:\\/+(?!\\/)(?:[^\\/]+\\.)?"), # process extended anchor at expression start
     (re.compile(r'^\\\|'), r"^"),  # process anchor at expression start
     (re.compile(r'\\\|$'), r"$"),  # process anchor at expression end
     (re.compile(r'^(\\\.\\\*)'), r''),  # remove leading wildcards
