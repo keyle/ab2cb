@@ -26,6 +26,7 @@ RegExpFilter_typeMap = {
     'SUBDOCUMENT': 32,
     'DOCUMENT': 64,
     'XBL': 1,
+    'PING': 1,
     'XMLHTTPREQUEST': 2048,
     'OBJECT_SUBREQUEST': 4096,
     'DTD': 1,
@@ -37,6 +38,18 @@ RegExpFilter_typeMap = {
     'POPUP': 0x10000000,
     'ELEMHIDE': 0x40000000
 }
+
+UnsupportedContentTypes = [
+    'OTHER',
+    'OBJECT',
+    'XBL',
+    'PING',
+    'OBJECT_SUBREQUEST',
+    'DTD',
+    'FONT',
+    'BACKGROUND',
+    'ELEMHIDE'
+]
 
 RegExpFilter_prototype_contentType = 0x7FFFFFFF
 
@@ -258,7 +271,7 @@ def regex_from_text(text):
                 option = option[:separatorIndex]
 
             option = option.replace('-', "_")
-            if option in RegExpFilter_typeMap:
+            if option in RegExpFilter_typeMap and option not in UnsupportedContentTypes:
                 if contentType is None:
                     contentType = 0
                 contentType |= RegExpFilter_typeMap[option]
