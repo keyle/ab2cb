@@ -188,6 +188,7 @@ def regex_filter(origText, regexpSource, contentType, matchCase, domains, thirdP
         if ifd and unl:
             # Invalid rule, needs a split
             print('Invalid: %s (Needs rule split due to mixed domain restrictions)' % origText)
+            return None
         else:
             if ifd:
                 filter['trigger']['if-domain'] = ifd
@@ -226,7 +227,8 @@ def blocking_filter(origText, regexpSource, contentType, matchCase, domains, thi
 def whitelist_filter(origText, regexpSource, contentType, matchCase, domains, thirdParty, sitekeys):
     #print("White: '%s' '%s' '%s' '%s' '%s' '%s' '%s'" % (origText, regexpSource, contentType, matchCase, domains, thirdParty, sitekeys))
     filter = regex_filter(origText, regexpSource, contentType, matchCase, domains, thirdParty, sitekeys)
-    filter['action']['type'] = 'ignore-previous-rules'
+    if filter:
+        filter['action']['type'] = 'ignore-previous-rules'
     return filter
 
 
