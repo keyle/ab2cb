@@ -57,6 +57,14 @@ def parse_opts(argv, stdin=None, stdout=None, stderr=None):
         default=False,
         help='Do not produce white list rules.'
     )
+    
+    parser.add_argument(
+        '--strip-whitespace',
+        dest='strip_whitespace',
+        action='store_true',
+        default=False,
+        help='Strip all whitespace from the generated file.'
+    )
 
     parser.add_argument(
         'files',

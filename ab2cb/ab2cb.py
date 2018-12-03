@@ -375,7 +375,10 @@ def write_rules(options, rules):
     out = black
     if not options.no_white:
         out = black + white
-    json.dump(out, fp, indent=4)
+    if options.strip_whitespace:
+        json.dump(out, fp, separators=(',', ': '))
+    else:
+        json.dump(out, fp, indent=4)
 
 
 def ab2cb(options):
