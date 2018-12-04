@@ -133,7 +133,7 @@ def elem_hide_from_text(text, domain, isException, tagName, attrRules, selector)
     return filter
 
 
-def regex_filter(origText, regexpSource, contentType, matchCase, domains, thirdParty, sitekeys):
+def regex_filter(origText, regexpSource, contentType, matchCase, domains, thirdParty, sitekeys, isException):
     anchor = False
     requires_scheme = False
     length = len(regexpSource)
@@ -196,6 +196,10 @@ def regex_filter(origText, regexpSource, contentType, matchCase, domains, thirdP
                 filter['trigger']['unless-domain'] = unl
 
     if contentType:
+        if contentType & RegExpFilter_typeMap['DOCUMENT'] and isException:
+            print('Invalid: %s ($document exceptions are not supported)' % origText)
+            return None
+            
         rt = []
         if contentType & RegExpFilter_typeMap['DOCUMENT'] or contentType & RegExpFilter_typeMap['SUBDOCUMENT']:
             rt.append('document')
@@ -220,13 +224,13 @@ def regex_filter(origText, regexpSource, contentType, matchCase, domains, thirdP
 
 def blocking_filter(origText, regexpSource, contentType, matchCase, domains, thirdParty, sitekeys, collapse):
     #print("Blocking: '%s' '%s' '%s' '%s' '%s' '%s' '%s' '%s'" % (origText, regexpSource, contentType, matchCase, domains, thirdParty, sitekeys, collapse))
-    filter = regex_filter(origText, regexpSource, contentType, matchCase, domains, thirdParty, sitekeys)
+    filter = regex_filter(origText, regexpSource, contentType, matchCase, domains, thirdParty, sitekeys, False)
     return filter
 
 
 def whitelist_filter(origText, regexpSource, contentType, matchCase, domains, thirdParty, sitekeys):
     #print("White: '%s' '%s' '%s' '%s' '%s' '%s' '%s'" % (origText, regexpSource, contentType, matchCase, domains, thirdParty, sitekeys))
-    filter = regex_filter(origText, regexpSource, contentType, matchCase, domains, thirdParty, sitekeys)
+    filter = regex_filter(origText, regexpSource, contentType, matchCase, domains, thirdParty, sitekeys, True)
     if filter:
         filter['action']['type'] = 'ignore-previous-rules'
     return filter
