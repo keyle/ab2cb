@@ -379,7 +379,7 @@ def write_rules(options, rules):
     if not options.no_white:
         out = black + white
     if options.strip_whitespace:
-        json.dump(out, fp, separators=(',', ': '))
+        json.dump(out, fp, separators=(',', ':'))
     else:
         json.dump(out, fp, indent=4)
 
