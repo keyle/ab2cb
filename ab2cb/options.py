@@ -49,15 +49,14 @@ def parse_opts(argv, stdin=None, stdout=None, stderr=None):
         metavar='FILE',
         help='Save converted text to FILE. If not given, output to stdout.'
     )
-
-    parser.add_argument(
-        '--no-white',
-        dest='no_white',
-        action='store_true',
-        default=False,
-        help='Do not produce white list rules.'
-    )
     
+    parser.add_argument(
+        '--output-rules',
+        dest='output_rules',
+        metavar='FILE',
+        help='Save rules that were included in the output to FILE'
+    )
+
     parser.add_argument(
         '--strip-whitespace',
         dest='strip_whitespace',

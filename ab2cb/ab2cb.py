@@ -329,6 +329,7 @@ def filter_from_text(text):
 
 def ab2cb_fp(options, fp):
     rules = []
+    acceptedLines = []
     for l in fp.readlines():
         l = l.strip()
         if not l:
@@ -341,7 +342,8 @@ def ab2cb_fp(options, fp):
         rule = filter_from_text(l)
         if rule:
             rules.append(rule)
-    return rules
+            acceptedLines.append(l)
+    return (rules, acceptedLines)
 
 
 def ab2cb_file(options, path):
@@ -354,9 +356,12 @@ def ab2cb_file(options, path):
     return rules
 
 
-def write_rules(options, rules):
-    if not rules:
+def write_rules(options, rulesAndLines):
+    if not rulesAndLines or not rulesAndLines[0]:
         return
+    
+    rules = rulesAndLines[0]
+    lines = rulesAndLines[1]
 
     fp = options.stdout
     if options.output:
@@ -366,22 +371,21 @@ def write_rules(options, rules):
             writerr_file_access(options, 'Cannot open output file: %s' % options.output)
             error('write_rules: exception for %s: %s' % (options.output, e), exc_info=True)
             return
+            
+    if options.output_rules:
+        try:
+            rulesfp = open(options.output_rules, 'w')
+            rulesfp.write('\n'.join(lines))
+            rulesfp.close()
+        except Exception as e:
+            writerr_file_access(options, 'Cannot open output file: %s' % options.output_rules)
+            error('write_rules: exception for %s: %s' % (options.output_rules, e), exc_info=True)
+            return
 
-    black = []
-    white = []
-    for r in rules:
-        if r['action']['type'] == 'ignore-previous-rules':
-            white.append(r)
-        else:
-            black.append(r)
-
-    out = black
-    if not options.no_white:
-        out = black + white
     if options.strip_whitespace:
-        json.dump(out, fp, separators=(',', ':'))
+        json.dump(rules, fp, separators=(',', ':'))
     else:
-        json.dump(out, fp, indent=4)
+        json.dump(rules, fp, indent=4)
 
 
 def ab2cb(options):
