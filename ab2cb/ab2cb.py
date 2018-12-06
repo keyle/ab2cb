@@ -293,10 +293,10 @@ def regex_from_text(text):
             elif option == "DOMAIN" and value:
                 domains = value
 
-            elif option == "THIRD_PARTY":
+            elif option == "THIRD_PARTY" or option == "~FIRST_PARTY":
                 thirdParty = True
 
-            elif option == "~THIRD_PARTY":
+            elif option == "~THIRD_PARTY" or option == "FIRST_PARTY":
                 thirdParty = False
 
             elif option == "COLLAPSE":
