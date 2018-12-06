@@ -399,11 +399,12 @@ def write_rules(options, rulesAndLines):
 
 
 def ab2cb(options):
-    rules = []
+    rules = ([], [])
     if options.files:
         for f in options.files:
             file_rules = ab2cb_file(options, f)
-            rules.extend(file_rules)
+            rules[0].extend(file_rules[0])
+            rules[1].extend(file_rules[1])
     else:
         rules = ab2cb_fp(options, options.stdin)
     write_rules(options, rules)
