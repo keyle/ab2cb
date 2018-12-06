@@ -68,6 +68,8 @@ regex_cleaners = [
     (re.compile(r'(\\\.\\\*)$'), r''),  # remove trailing wildcards
 ]
 
+def is_ascii(s):
+    return all(ord(c) < 128 for c in s)
 
 def writerr(options, line, exception=None, set_exit_status=True):
     if set_exit_status:
@@ -141,7 +143,8 @@ def regex_filter(origText, regexpSource, contentType, matchCase, domains, thirdP
         return
     # already a regex
     if length >= 2 and regexpSource[0] == '/' and regexpSource[-1] == '/':
-        regex = regexpSource[1:-1]
+        return None
+#        regex = regexpSource[1:-1]
     else:
         regex = regexpSource
         if regex[0:2] == '||':
@@ -156,7 +159,6 @@ def regex_filter(origText, regexpSource, contentType, matchCase, domains, thirdP
             #print('In: %s' % regex)
             regex = r[0].sub(r[1], regex)
             #print('Out: %s' % regex)
-
         #print('Before: %s  After: %s' % (regexpSource, regex))
 
     if regex[0:3] != '://' and requires_scheme:
@@ -187,7 +189,7 @@ def regex_filter(origText, regexpSource, contentType, matchCase, domains, thirdP
                 ifd.append(d)
         if ifd and unl:
             # Invalid rule, needs a split
-            print('Invalid: %s (Needs rule split due to mixed domain restrictions)' % origText)
+            # print('Invalid: %s (Needs rule split due to mixed domain restrictions)' % origText)
             return None
         else:
             if ifd:
@@ -197,7 +199,7 @@ def regex_filter(origText, regexpSource, contentType, matchCase, domains, thirdP
 
     if contentType:
         if contentType & RegExpFilter_typeMap['DOCUMENT'] and isException:
-            print('Invalid: %s ($document exceptions are not supported)' % origText)
+            # print('Invalid: %s ($document exceptions are not supported)' % origText)
             return None
             
         rt = []
@@ -309,7 +311,7 @@ def regex_from_text(text):
                 sitekeys = value
 
             else:
-                print('Invalid: %s' % origText)
+#                print('Invalid: %s' % origText)
                 return None
 
     if blocking:
@@ -317,12 +319,14 @@ def regex_from_text(text):
     return whitelist_filter(origText, text, contentType, matchCase, domains, thirdParty, sitekeys)
 
 
-def filter_from_text(text):
+def filter_from_text(text, options):
     match = None
     hash_pos = text.find('#')
     if hash_pos >= 0:
         match = elemhideRegExp.search(text)
     if match:
+        if options.no_css:
+            return None
         return elem_hide_from_text(text, match.group(1), match.group(2), match.group(3), match.group(4), match.group(5))
     return regex_from_text(text)
 
@@ -338,8 +342,11 @@ def ab2cb_fp(options, fp):
             continue
         if l[0] == '!':
             continue
+        if not is_ascii(l):
+#            print("Ignoring non-ascii rule: %s" % l)
+            continue
 
-        rule = filter_from_text(l)
+        rule = filter_from_text(l, options)
         if rule:
             rules.append(rule)
             acceptedLines.append(l)
@@ -396,6 +403,8 @@ def write_rules(options, rulesAndLines):
         json.dump(out, fp, separators=(',', ':'))
     else:
         json.dump(out, fp, indent=4)
+        
+    print("\nGenerated a total of %d rules (%d blocks, %d exceptions)\n\n" % (len(out), len(black), len(white)))
 
 
 def ab2cb(options):
@@ -405,6 +414,7 @@ def ab2cb(options):
             file_rules = ab2cb_file(options, f)
             rules[0].extend(file_rules[0])
             rules[1].extend(file_rules[1])
+            print("Generated %d rules for %s" % (len(file_rules[1]), f))
     else:
         rules = ab2cb_fp(options, options.stdin)
     write_rules(options, rules)
@@ -431,6 +441,7 @@ def main(argv, stdin=None, stdout=None, stderr=None):
     except KeyboardInterrupt:
         writerr(options, '\nInterrupted')
     except Exception as e:
+        print("ab2cb exception: %s" % e)
         writerr(options, 'ab2cb exception', exception=e)
         options.exit_status = 'error'
 

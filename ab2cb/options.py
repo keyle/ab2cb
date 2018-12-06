@@ -64,6 +64,14 @@ def parse_opts(argv, stdin=None, stdout=None, stderr=None):
         default=False,
         help='Strip all whitespace from the generated file.'
     )
+    
+    parser.add_argument(
+        '--no-css',
+        dest='no_css',
+        action='store_true',
+        default=False,
+        help='Do not generate any CSS rules'
+    )
 
     parser.add_argument(
         'files',
