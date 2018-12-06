@@ -382,10 +382,20 @@ def write_rules(options, rulesAndLines):
             error('write_rules: exception for %s: %s' % (options.output_rules, e), exc_info=True)
             return
 
+    black = []
+    white = []
+    for r in rules:
+        if r['action']['type'] == 'ignore-previous-rules':
+            white.append(r)
+        else:
+            black.append(r)
+
+    out = black + white
+
     if options.strip_whitespace:
-        json.dump(rules, fp, separators=(',', ':'))
+        json.dump(out, fp, separators=(',', ':'))
     else:
-        json.dump(rules, fp, indent=4)
+        json.dump(out, fp, indent=4)
 
 
 def ab2cb(options):
