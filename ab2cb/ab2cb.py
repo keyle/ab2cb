@@ -166,6 +166,9 @@ def regex_filter(origText, regexpSource, contentType, matchCase, domains, thirdP
         
     if anchor:
         regex = "^" + regex
+    
+    if not is_ascii(regex):
+        return None
 
     filter = {
         'trigger': {
@@ -184,9 +187,15 @@ def regex_filter(origText, regexpSource, contentType, matchCase, domains, thirdP
         unl = []
         for d in domains.lower().split('|'):
             if d[0] == '~':
-                unl.append(d[1:])
+                encoded = punycode(d[1:])
+                if not encoded:
+                    return None
+                unl.append(encoded)
             else:
-                ifd.append(d)
+                encoded = punycode(d)
+                if not encoded:
+                    return None
+                ifd.append(encoded)
         if ifd and unl:
             # Invalid rule, needs a split
             # print('Invalid: %s (Needs rule split due to mixed domain restrictions)' % origText)
@@ -318,6 +327,14 @@ def regex_from_text(text):
         return blocking_filter(origText, text, contentType, matchCase, domains, thirdParty, sitekeys, collapse)
     return whitelist_filter(origText, text, contentType, matchCase, domains, thirdParty, sitekeys)
 
+def punycode(text):
+    if is_ascii(text):
+        return text
+    try:
+        # Attempt to encode Punycode
+        return str(text.encode('idna'))[2:-1] # (Remove b'')
+    except:
+        return None
 
 def filter_from_text(text, options):
     match = None
@@ -341,9 +358,6 @@ def ab2cb_fp(options, fp):
         if l[0] == '[':
             continue
         if l[0] == '!':
-            continue
-        if not is_ascii(l):
-#            print("Ignoring non-ascii rule: %s" % l)
             continue
 
         rule = filter_from_text(l, options)
