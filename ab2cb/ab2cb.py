@@ -9,6 +9,7 @@ import os
 import os.path
 import re
 import sys
+import copy
 
 from .logger import error, init_logging
 
@@ -135,7 +136,7 @@ def elem_hide_from_text(text, domain, isException, tagName, attrRules, selector)
     return filter
 
 
-def regex_filter(origText, regexpSource, contentType, matchCase, domains, firstParty, thirdParty, sitekeys, isException):
+def regex_filters(origText, regexpSource, contentType, matchCase, domains, firstParty, thirdParty, sitekeys, isException):
     anchor = False
     requires_scheme = False
     length = len(regexpSource)
@@ -232,21 +233,31 @@ def regex_filter(origText, regexpSource, contentType, matchCase, domains, firstP
             rt.append('popup')
         if rt:
             filter['trigger']['resource-type'] = rt
-    return filter
+    
+        if len(rt) > 1 and 'document' in rt and not (firstParty or thirdParty):
+            # Split the rule up into 2 to only block third-party documents
+            splitFilter = copy.deepcopy(filter)
+            splitFilter['trigger']['resource-type'] = ['document']
+            splitFilter['trigger']['load-type'] = ['third-party']
+            filter['trigger']['resource-type'] = rt[1:]
+            print("Split %s into 2 rules" % origText)
+            return [filter, splitFilter]
+            
+    return [filter]
 
 
-def blocking_filter(origText, regexpSource, contentType, matchCase, domains, firstParty, thirdParty, sitekeys, collapse):
+def blocking_filters(origText, regexpSource, contentType, matchCase, domains, firstParty, thirdParty, sitekeys, collapse):
     #print("Blocking: '%s' '%s' '%s' '%s' '%s' '%s' '%s' '%s'" % (origText, regexpSource, contentType, matchCase, domains, thirdParty, sitekeys, collapse))
-    filter = regex_filter(origText, regexpSource, contentType, matchCase, domains, firstParty, thirdParty, sitekeys, False)
-    return filter
+    return regex_filters(origText, regexpSource, contentType, matchCase, domains, firstParty, thirdParty, sitekeys, False)
 
 
-def whitelist_filter(origText, regexpSource, contentType, matchCase, domains, firstParty, thirdParty, sitekeys):
+def whitelist_filters(origText, regexpSource, contentType, matchCase, domains, firstParty, thirdParty, sitekeys):
     #print("White: '%s' '%s' '%s' '%s' '%s' '%s' '%s'" % (origText, regexpSource, contentType, matchCase, domains, thirdParty, sitekeys))
-    filter = regex_filter(origText, regexpSource, contentType, matchCase, domains, firstParty, thirdParty, sitekeys, True)
-    if filter:
-        filter['action']['type'] = 'ignore-previous-rules'
-    return filter
+    filters = regex_filters(origText, regexpSource, contentType, matchCase, domains, firstParty, thirdParty, sitekeys, True)
+    if filters:
+        for f in filters:
+            f['action']['type'] = 'ignore-previous-rules'
+    return filters
 
 
 def regex_from_text(text):
@@ -329,8 +340,8 @@ def regex_from_text(text):
                 return None
 
     if blocking:
-        return blocking_filter(origText, text, contentType, matchCase, domains, firstParty, thirdParty, sitekeys, collapse)
-    return whitelist_filter(origText, text, contentType, matchCase, domains, firstParty, thirdParty, sitekeys)
+        return blocking_filters(origText, text, contentType, matchCase, domains, firstParty, thirdParty, sitekeys, collapse)
+    return whitelist_filters(origText, text, contentType, matchCase, domains, firstParty, thirdParty, sitekeys)
 
 def punycode(text):
     if is_ascii(text):
@@ -365,9 +376,9 @@ def ab2cb_fp(options, fp):
         if l[0] == '!':
             continue
 
-        rule = filter_from_text(l, options)
-        if rule:
-            rules.append(rule)
+        line_rules = filter_from_text(l, options)
+        if line_rules:
+            rules.extend(line_rules)
             acceptedLines.append(l)
     return (rules, acceptedLines)
 
