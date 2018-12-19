@@ -135,7 +135,7 @@ def elem_hide_from_text(text, domain, isException, tagName, attrRules, selector)
     return filter
 
 
-def regex_filter(origText, regexpSource, contentType, matchCase, domains, thirdParty, sitekeys, isException):
+def regex_filter(origText, regexpSource, contentType, matchCase, domains, firstParty, thirdParty, sitekeys, isException):
     anchor = False
     requires_scheme = False
     length = len(regexpSource)
@@ -182,6 +182,8 @@ def regex_filter(origText, regexpSource, contentType, matchCase, domains, thirdP
         filter['trigger']['url-filter-is-case-sensitive'] = True
     if thirdParty:
         filter['trigger']['load-type'] = ['third-party']
+    if firstParty:
+        filter['trigger']['load-type'] = ['first-party']
     if domains:
         ifd = []
         unl = []
@@ -233,15 +235,15 @@ def regex_filter(origText, regexpSource, contentType, matchCase, domains, thirdP
     return filter
 
 
-def blocking_filter(origText, regexpSource, contentType, matchCase, domains, thirdParty, sitekeys, collapse):
+def blocking_filter(origText, regexpSource, contentType, matchCase, domains, firstParty, thirdParty, sitekeys, collapse):
     #print("Blocking: '%s' '%s' '%s' '%s' '%s' '%s' '%s' '%s'" % (origText, regexpSource, contentType, matchCase, domains, thirdParty, sitekeys, collapse))
-    filter = regex_filter(origText, regexpSource, contentType, matchCase, domains, thirdParty, sitekeys, False)
+    filter = regex_filter(origText, regexpSource, contentType, matchCase, domains, firstParty, thirdParty, sitekeys, False)
     return filter
 
 
-def whitelist_filter(origText, regexpSource, contentType, matchCase, domains, thirdParty, sitekeys):
+def whitelist_filter(origText, regexpSource, contentType, matchCase, domains, firstParty, thirdParty, sitekeys):
     #print("White: '%s' '%s' '%s' '%s' '%s' '%s' '%s'" % (origText, regexpSource, contentType, matchCase, domains, thirdParty, sitekeys))
-    filter = regex_filter(origText, regexpSource, contentType, matchCase, domains, thirdParty, sitekeys, True)
+    filter = regex_filter(origText, regexpSource, contentType, matchCase, domains, firstParty, thirdParty, sitekeys, True)
     if filter:
         filter['action']['type'] = 'ignore-previous-rules'
     return filter
@@ -262,6 +264,7 @@ def regex_from_text(text):
     domains = None
     sitekeys = None
     thirdParty = None
+    firstParty = None
     collapse = None
 
     match = None
@@ -306,9 +309,11 @@ def regex_from_text(text):
 
             elif option == "THIRD_PARTY" or option == "~FIRST_PARTY":
                 thirdParty = True
+                firstParty = False
 
             elif option == "~THIRD_PARTY" or option == "FIRST_PARTY":
                 thirdParty = False
+                firstParty = True
 
             elif option == "COLLAPSE":
                 collapse = True
@@ -324,8 +329,8 @@ def regex_from_text(text):
                 return None
 
     if blocking:
-        return blocking_filter(origText, text, contentType, matchCase, domains, thirdParty, sitekeys, collapse)
-    return whitelist_filter(origText, text, contentType, matchCase, domains, thirdParty, sitekeys)
+        return blocking_filter(origText, text, contentType, matchCase, domains, firstParty, thirdParty, sitekeys, collapse)
+    return whitelist_filter(origText, text, contentType, matchCase, domains, firstParty, thirdParty, sitekeys)
 
 def punycode(text):
     if is_ascii(text):
