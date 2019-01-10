@@ -3,14 +3,23 @@
 import WebKit
 import Foundation
 
+enum CompileResult {
+  case success
+  case failed(String)
+}
+
 /// Compile a content blocker list synchronously, must be run on background thread
-func synchronousCompileList(_ list: String, to ruleStore: WKContentRuleListStore = .default()!) -> Bool {
+func synchronousCompileList(_ list: String, to ruleStore: WKContentRuleListStore = .default()!) -> CompileResult {
   let group = DispatchGroup()
-  var result = true
+  var result: CompileResult!
   
   group.enter()
   ruleStore.compileContentRuleList(forIdentifier: "list", encodedContentRuleList: list, completionHandler: { list, error in
-    result = (error == nil)
+    if let error = error {
+      result = .failed(error.localizedDescription)
+    } else {
+      result = .success
+    }
     group.leave()
   })
   group.wait()
@@ -28,13 +37,16 @@ for path in CommandLine.arguments.dropFirst().map({ NSString(string: $0) }) {
   compileQueue.async {
     let timeStart = Date()
     print("Compiling: \(path.lastPathComponent)", terminator: "")
-    if synchronousCompileList(list) {
-      print("... ✓", terminator: "")
-    } else {
-      print("... 𐄂", terminator: "")
+    let result = synchronousCompileList(list)
+    let performance = String(format: "(%.02fs)", Date().timeIntervalSince(timeStart))
+    switch result {
+    case .success:
+      print("... ✓ \(performance)")
+    case .failed(let errorDescription):
+      print("... 𐄂 \(performance)")
+      print("  → \(errorDescription)")
       anyFailed = true
     }
-    print("\(String(format: " (%.02fs)", Date().timeIntervalSince(timeStart)))")
   }
 }
 
