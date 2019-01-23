@@ -133,7 +133,7 @@ def elem_hide_from_text(text, domain, isException, tagName, attrRules, selector)
         else:
             filter['trigger']['if-domain'] = domain.lower().split(',')
 
-    return filter
+    return [filter]
 
 
 def regex_filters(origText, regexpSource, contentType, matchCase, domains, firstParty, thirdParty, sitekeys, isException):
