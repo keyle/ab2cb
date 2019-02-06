@@ -412,7 +412,7 @@ def write_rules(options, rulesAndLines):
     if options.output_rules:
         try:
             rulesfp = open(options.output_rules, 'w')
-            rulesfp.write('\n'.join(lines))
+            rulesfp.write('\n'.join(lines) + '\n')
             rulesfp.close()
         except Exception as e:
             writerr_file_access(options, 'Cannot open output file: %s' % options.output_rules)
