@@ -168,6 +168,10 @@ def regex_filters(origText, regexpSource, contentType, matchCase, domains, first
     if anchor:
         regex = "^" + regex
     
+    if len(regex) == 0:
+        print("Skipping \"%s\" due to empty post-processed regex url-filter" % origText) 
+        return None
+        
     if not is_ascii(regex):
         return None
 
