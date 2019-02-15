@@ -389,7 +389,10 @@ def ab2cb_fp(options, fp):
         line_rules = filter_from_text(l, options)
         if line_rules:
             rules.extend(line_rules)
-            acceptedLines.append(l)
+            if l in DefaultThirdPartyRules:
+                acceptedLines.append(l + "$third-party")
+            else:
+                acceptedLines.append(l)
     return (rules, acceptedLines)
 
 
