@@ -263,6 +263,12 @@ def whitelist_filters(origText, regexpSource, contentType, matchCase, domains, f
             f['action']['type'] = 'ignore-previous-rules'
     return filters
 
+# Rules that should default to third-party load type unless specified via $first-party/$~third-party
+DefaultThirdPartyRules = [
+    "&adurl=",
+    "&adgroupid=",
+    "&AdType="
+]
 
 def regex_from_text(text):
     origText = text
@@ -278,7 +284,7 @@ def regex_from_text(text):
     matchCase = None
     domains = None
     sitekeys = None
-    thirdParty = None
+    thirdParty = text in DefaultThirdPartyRules
     firstParty = None
     collapse = None
 
