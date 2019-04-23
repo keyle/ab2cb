@@ -267,7 +267,8 @@ def whitelist_filters(origText, regexpSource, contentType, matchCase, domains, f
 DefaultThirdPartyRules = [
     "&adurl=",
     "&adgroupid=",
-    "&AdType="
+    "&AdType=",
+    "/ad1.$domain=~ad1.de|~ad1.in|~vereinslinie.de",
 ]
 
 def regex_from_text(text):
@@ -390,7 +391,10 @@ def ab2cb_fp(options, fp):
         if line_rules:
             rules.extend(line_rules)
             if l in DefaultThirdPartyRules:
-                acceptedLines.append(l + "$third-party")
+                if "$" in l:
+                    acceptedLines.append(l + ",third-party")
+                else:
+                    acceptedLines.append(l + "$third-party")
             else:
                 acceptedLines.append(l)
     return (rules, acceptedLines)
