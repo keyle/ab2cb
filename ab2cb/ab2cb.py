@@ -192,7 +192,8 @@ def regex_filters(origText, regexpSource, contentType, matchCase, domains, first
     if domains:
         ifd = []
         unl = []
-        for d in domains.lower().split('|'):
+        domain_list = __builtins__.filter(len, domains.lower().split('|'))
+        for d in domain_list:
             if d[0] == '~':
                 encoded = punycode(d[1:])
                 if not encoded:
