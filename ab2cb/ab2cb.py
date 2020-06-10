@@ -141,11 +141,10 @@ def regex_filters(origText, regexpSource, contentType, matchCase, domains, first
     requires_scheme = False
     length = len(regexpSource)
     if length == 0: 
-        return
+        return None
     # already a regex
     if length >= 2 and regexpSource[0] == '/' and regexpSource[-1] == '/':
         return None
-#        regex = regexpSource[1:-1]
     else:
         regex = regexpSource
         if regex[0:2] == '||':
@@ -154,7 +153,7 @@ def regex_filters(origText, regexpSource, contentType, matchCase, domains, first
         elif regex[0] == '|':
             regex = regex[1:]
             anchor = True
-        if regex[-1] == '^':
+        if len(regex) > 0 and regex[-1] == '^':
             regex = regex[0:-1]
         for r in regex_cleaners:
             #print('In: %s' % regex)
@@ -492,6 +491,7 @@ def main(argv, stdin=None, stdout=None, stderr=None):
         print("ab2cb exception: %s" % e)
         writerr(options, 'ab2cb exception', exception=e)
         options.exit_status = 'error'
+        raise e
 
     if options.exit_status == 'not-set':
         if options.did_extract:
