@@ -16,7 +16,7 @@ from .logger import error, init_logging
 # lifted from ABP/filterClasses.js
 elemhideRegExp = re.compile(r'^([^\/\*\|\@"!]*?)#(\@)?(?:([\w\-]+|\*)((?:\([\w\-]+(?:[$^*]?=[^\(\)"]*)?\))*)|#([^{}]+))$')
 regexpRegExp = re.compile(r'^(@@)?\/.*\/(?:\$~?[\w\-]+(?:=[^,\s]+)?(?:,~?[\w\-]+(?:=[^,\s]+)?)*)?$')
-optionsRegExp = re.compile(r'\$(~?[\w\-]+(?:=[^,\s]+)?(?:,~?[\w\-]+(?:=[^,\s]+)?)*)$')
+optionsRegExp = re.compile(r'\$(~?[\w\-]+(?:=[^,]+)?(?:,~?[\w\-]+(?:=[^,\s]+)?)*)$')
 
 RegExpFilter_typeMap = {
     'OTHER': 1,
@@ -49,7 +49,8 @@ UnsupportedContentTypes = [
     'DTD',
     'FONT',
     'BACKGROUND',
-    'ELEMHIDE'
+    'ELEMHIDE',
+    'CSP'
 ]
 
 RegExpFilter_prototype_contentType = 0x7FFFFFFF
