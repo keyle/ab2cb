@@ -198,12 +198,12 @@ def regex_filters(origText, regexpSource, contentType, matchCase, domains, first
                 encoded = punycode(d[1:])
                 if not encoded:
                     return None
-                unl.append(encoded)
+                unl.append('*' + encoded)
             else:
                 encoded = punycode(d)
                 if not encoded:
                     return None
-                ifd.append(encoded)
+                ifd.append('*' + encoded)
         if ifd and unl:
             # Invalid rule, needs a split
             # print('Invalid: %s (Needs rule split due to mixed domain restrictions)' % origText)
