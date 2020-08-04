@@ -163,7 +163,7 @@ def regex_filters(origText, regexpSource, contentType, matchCase, domains, first
         #print('Before: %s  After: %s' % (regexpSource, regex))
 
     if regex[0:3] != '://' and requires_scheme:
-        regex = '^[^:]+:(//)?([^/]+.)?' + regex
+        regex = '^[^:]+:(//)?([^/]+\\.)?' + regex
         
     if anchor:
         regex = "^" + regex
