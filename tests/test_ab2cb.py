@@ -584,3 +584,21 @@ class TestUnlessDomainsExample(object):
         assert pattern.match('https://a-api.twitter.com') is None
         assert pattern.match('https://bubba.twitter.com') is None
         assert pattern.match('https://bubba.com') is None
+
+
+class TestSubdomainBlockExample(object):
+    out = abcb_from_text('||s.youtube.com^')
+
+    def test_block(self):
+        assert self.out.cb[0]['action']['type'] == 'block'
+
+    def test_url_filter(self):
+        url_filter = self.out.cb[0]['trigger']['url-filter']
+        pattern = re.compile(url_filter)
+
+        # `url-filter` should only match s.youtube.com and subdomains
+        assert pattern.match('https://s.youtube.com') is not None
+        assert pattern.match('https://s.s.youtube.com') is not None
+        assert pattern.match('https://accounts.youtube.com') is None
+        assert pattern.match('https://ss.youtube.com') is None
+        assert pattern.match('https://s.youtube.co.uk') is None
