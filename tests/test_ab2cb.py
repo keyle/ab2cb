@@ -413,44 +413,50 @@ third_party = [
 
 
 whitelist = [
-    ABCB(ab='@@||google.com/recaptcha/$domain=mediafire.com', cb={
+    ABCB(ab='@@||google.com/recaptcha/$domain=mediafire.com', cb=[{
         "action": {
             "type": "ignore-previous-rules"
         },
         "trigger": {
-            "url-filter": "^https?://google\\.com/recaptcha/",
+            "url-filter": "{}google\\.com/recaptcha/".format(regex_domain_subdomain_with_protocol),
             "if-domain": [
-                "mediafire.com"
+                "*mediafire.com"
             ]
         }
-    }),
-    ABCB(ab='@@||ad4.liverail.com/?compressed|$domain=majorleaguegaming.com|pbs.org|wikihow.com', cb={
+    }]),
+    ABCB(ab='@@||ad4.liverail.com/?compressed|$domain=majorleaguegaming.com|pbs.org|wikihow.com', cb=[{
         "action": {
             "type": "ignore-previous-rules"
         },
         "trigger": {
-            "url-filter": "^https?://ad4\\.liverail\\.com/\\?compressed$",
+            "url-filter": "{}ad4\\.liverail\\.com/\\?compressed$".format(regex_domain_subdomain_with_protocol),
             "if-domain": [
-                "majorleaguegaming.com",
-                "pbs.org",
-                "wikihow.com"
+                "*majorleaguegaming.com",
+                "*pbs.org",
+                "*wikihow.com"
             ]
         }
-    }),
-    ABCB(ab='@@||advertising.autotrader.co.uk^$~third-party', cb={
+    }]),
+    ABCB(ab='@@||advertising.autotrader.co.uk^$~third-party', cb=[{
         "action": {
             "type": "ignore-previous-rules"
         },
         "trigger": {
-            "url-filter": "^https?://advertising\\.autotrader\\.co\\.uk(?:[\\x00-\\x24\\x26-\\x2C\\x2F\\x3A-\\x40\\x5B-\\x5E\\x60\\x7B-\\x7F]|$)"
+            "load-type": [
+                "first-party"
+            ],
+            "url-filter": "{}advertising\\.autotrader\\.co\\.uk".format(regex_domain_subdomain_with_protocol),
         }
-    }),
-    ABCB(ab='@@||advertising.racingpost.com^$image,script,stylesheet,~third-party,xmlhttprequest', cb={
+    }]),
+    ABCB(ab='@@||advertising.racingpost.com^$image,script,stylesheet,~third-party,xmlhttprequest', cb=[{
         "action": {
             "type": "ignore-previous-rules"
         },
         "trigger": {
-            "url-filter": "^https?://advertising\\.racingpost\\.com(?:[\\x00-\\x24\\x26-\\x2C\\x2F\\x3A-\\x40\\x5B-\\x5E\\x60\\x7B-\\x7F]|$)",
+            "load-type": [
+                "first-party"
+            ],
+            "url-filter": "{}advertising\\.racingpost\\.com".format(regex_domain_subdomain_with_protocol),
             "resource-type": [
                 "image",
                 "style-sheet",
@@ -458,7 +464,7 @@ whitelist = [
                 "raw"
             ]
         }
-    }),
+    }]),
 ]
 
 
@@ -544,11 +550,11 @@ class TestThirdParty(object):
         assert out == abcb
 
 
-# @pytest.mark.parametrize('abcb', whitelist)
-# class TestWhiteList(object):
-#     def test_whitelist(self, abcb):
-#         out = abcb_from_text(abcb.ab)
-#         assert out == abcb
+@pytest.mark.parametrize('abcb', whitelist)
+class TestWhiteList(object):
+    def test_whitelist(self, abcb):
+        out = abcb_from_text(abcb.ab)
+        assert out == abcb
 
 
 class TestUnlessDomainsExample(object):
