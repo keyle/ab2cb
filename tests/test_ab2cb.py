@@ -4,6 +4,7 @@ from __future__ import print_function
 import json
 import pprint
 import pytest
+import re
 import ab2cb.ab2cb
 from io import StringIO
 
@@ -22,8 +23,8 @@ class ABCB(object):
 
     def __eq__(self, other):
         # uncomment when debugging tests :)
-        pprint.pprint(self.cb)
-        pprint.pprint(other.cb)
+        # pprint.pprint(self.cb)
+        # pprint.pprint(other.cb)
         return (self.ab == other.ab) and (self.cb == other.cb)
 
     def __ne__(self, other):
@@ -548,3 +549,32 @@ class TestThirdParty(object):
 #     def test_whitelist(self, abcb):
 #         out = abcb_from_text(abcb.ab)
 #         assert out == abcb
+
+
+class TestUnlessDomainsExample(object):
+    out = abcb_from_text('||api.twitter.com^$third-party,domain=~tweetdeck.com|~twitter.com|~twitter.jp')
+
+    def test_block(self):
+        assert self.out.cb[0]['action']['type'] == 'block'
+
+    def test_unless_domain(self):
+        unless_domain_list = self.out.cb[0]['trigger']['unless-domain']
+        assert '*tweetdeck.com' in unless_domain_list
+        assert '*twitter.com' in unless_domain_list
+        assert '*twitter.jp' in unless_domain_list
+
+    def test_third_party_context(self):
+        assert 'third-party' in self.out.cb[0]['trigger']['load-type']
+
+    def test_url_filter(self):
+        url_filter = self.out.cb[0]['trigger']['url-filter']
+        pattern = re.compile(url_filter)
+
+        # `url-filter` should only match api.twitter.com and subdomains
+        assert pattern.match('https://api.twitter.com') is not None
+        assert pattern.match('https://a.api.twitter.com') is not None
+        assert pattern.match('https://a.a.api.twitter.com') is not None
+        assert pattern.match('https://aapi.twitter.com') is None
+        assert pattern.match('https://a-api.twitter.com') is None
+        assert pattern.match('https://bubba.twitter.com') is None
+        assert pattern.match('https://bubba.com') is None
