@@ -196,6 +196,9 @@ def regex_filters(origText, regexpSource, contentType, matchCase, domains, first
         unl = []
         domain_list = filter(len, domains.lower().split('|'))
         for d in domain_list:
+            # NOTE: `*` is not regex format. Per docs:
+            # "Add * in front to match domain and subdomains."
+            # https://developer.apple.com/documentation/safariservices/creating_a_content_blocker
             if d[0] == '~':
                 encoded = punycode(d[1:])
                 if not encoded:
