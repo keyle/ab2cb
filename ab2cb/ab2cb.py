@@ -70,8 +70,10 @@ regex_cleaners = [
     (re.compile(r'(\\\.\\\*)$'), r''),  # remove trailing wildcards
 ]
 
+
 def is_ascii(s):
     return all(ord(c) < 128 for c in s)
+
 
 def writerr(options, line, exception=None, set_exit_status=True):
     if set_exit_status:
@@ -141,7 +143,7 @@ def regex_filters(origText, regexpSource, contentType, matchCase, domains, first
     anchor = False
     requires_scheme = False
     length = len(regexpSource)
-    if length == 0: 
+    if length == 0:
         return None
     # already a regex
     if length >= 2 and regexpSource[0] == '/' and regexpSource[-1] == '/':
@@ -164,14 +166,14 @@ def regex_filters(origText, regexpSource, contentType, matchCase, domains, first
 
     if regex[0:3] != '://' and requires_scheme:
         regex = '^[^:]+:(//)?([^/]+\\.)?' + regex
-        
+
     if anchor:
         regex = "^" + regex
-    
+
     if len(regex) == 0:
-        print("Skipping \"%s\" due to empty post-processed regex url-filter" % origText) 
+        print("Skipping \"%s\" due to empty post-processed regex url-filter" % origText)
         return None
-        
+
     if not is_ascii(regex):
         return None
 
@@ -183,7 +185,7 @@ def regex_filters(origText, regexpSource, contentType, matchCase, domains, first
             'type': 'block'
         }
     }
-    if matchCase: 
+    if matchCase:
         filter['trigger']['url-filter-is-case-sensitive'] = True
     if thirdParty:
         filter['trigger']['load-type'] = ['third-party']
@@ -218,7 +220,7 @@ def regex_filters(origText, regexpSource, contentType, matchCase, domains, first
         if contentType & RegExpFilter_typeMap['DOCUMENT'] and isException:
             # print('Invalid: %s ($document exceptions are not supported)' % origText)
             return None
-            
+
         rt = []
         if contentType & RegExpFilter_typeMap['DOCUMENT'] or contentType & RegExpFilter_typeMap['SUBDOCUMENT']:
             rt.append('document')
@@ -238,7 +240,7 @@ def regex_filters(origText, regexpSource, contentType, matchCase, domains, first
             rt.append('popup')
         if rt:
             filter['trigger']['resource-type'] = rt
-    
+
         if len(rt) > 1 and 'document' in rt and not (firstParty or thirdParty):
             # Split the rule up into 2 to only block third-party documents
             splitFilter = copy.deepcopy(filter)
@@ -247,7 +249,7 @@ def regex_filters(origText, regexpSource, contentType, matchCase, domains, first
             filter['trigger']['resource-type'] = rt[1:]
             print("Split %s into 2 rules" % origText)
             return [filter, splitFilter]
-            
+
     return [filter]
 
 
@@ -271,6 +273,7 @@ DefaultThirdPartyRules = [
     "&AdType=",
     "/ad1.$domain=~ad1.de|~ad1.in|~vereinslinie.de",
 ]
+
 
 def regex_from_text(text):
     origText = text
@@ -348,21 +351,23 @@ def regex_from_text(text):
                 sitekeys = value
 
             else:
-#                print('Invalid: %s' % origText)
+                # print('Invalid: %s' % origText)
                 return None
 
     if blocking:
         return blocking_filters(origText, text, contentType, matchCase, domains, firstParty, thirdParty, sitekeys, collapse)
     return whitelist_filters(origText, text, contentType, matchCase, domains, firstParty, thirdParty, sitekeys)
 
+
 def punycode(text):
     if is_ascii(text):
         return text
     try:
         # Attempt to encode Punycode
-        return str(text.encode('idna'))[2:-1] # (Remove b'')
+        return str(text.encode('idna'))[2:-1]  # (Remove b'')
     except:
         return None
+
 
 def filter_from_text(text, options):
     match = None
@@ -414,7 +419,7 @@ def ab2cb_file(options, path):
 def write_rules(options, rulesAndLines):
     if not rulesAndLines or not rulesAndLines[0]:
         return
-    
+
     rules = rulesAndLines[0]
     lines = rulesAndLines[1]
 
@@ -426,7 +431,7 @@ def write_rules(options, rulesAndLines):
             writerr_file_access(options, 'Cannot open output file: %s' % options.output)
             error('write_rules: exception for %s: %s' % (options.output, e), exc_info=True)
             return
-            
+
     if options.output_rules:
         try:
             rulesfp = open(options.output_rules, 'w')
@@ -451,7 +456,7 @@ def write_rules(options, rulesAndLines):
         json.dump(out, fp, separators=(',', ':'))
     else:
         json.dump(out, fp, indent=4)
-        
+
     print("\nGenerated a total of %d rules (%d blocks, %d exceptions)\n\n" % (len(out), len(black), len(white)))
 
 
