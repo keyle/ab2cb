@@ -55,7 +55,16 @@ optional arguments:
 
 ## Testing
 
-Assuming you have `tox` and `pytest` installed, just type `tox` in this directory.
+Setup virtualenv with Python 3 (if needed)
+```shell
+python3 -m venv venv
+source ./venv/bin/activate
+pip install tox pep8
+```
+Run the tests
+```shell
+make test
+```
 
 
 ### Testing filters
