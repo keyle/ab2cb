@@ -177,7 +177,7 @@ def regex_filters(origText, regexpSource, contentType, matchCase, domains, first
     if not is_ascii(regex):
         return None
 
-    filter = {
+    filter_obj = {
         'trigger': {
             'url-filter': regex
         },
@@ -186,15 +186,15 @@ def regex_filters(origText, regexpSource, contentType, matchCase, domains, first
         }
     }
     if matchCase:
-        filter['trigger']['url-filter-is-case-sensitive'] = True
+        filter_obj['trigger']['url-filter-is-case-sensitive'] = True
     if thirdParty:
-        filter['trigger']['load-type'] = ['third-party']
+        filter_obj['trigger']['load-type'] = ['third-party']
     if firstParty:
-        filter['trigger']['load-type'] = ['first-party']
+        filter_obj['trigger']['load-type'] = ['first-party']
     if domains:
         ifd = []
         unl = []
-        domain_list = __builtins__.filter(len, domains.lower().split('|'))
+        domain_list = filter(len, domains.lower().split('|'))
         for d in domain_list:
             if d[0] == '~':
                 encoded = punycode(d[1:])
@@ -212,9 +212,9 @@ def regex_filters(origText, regexpSource, contentType, matchCase, domains, first
             return None
         else:
             if ifd:
-                filter['trigger']['if-domain'] = ifd
+                filter_obj['trigger']['if-domain'] = ifd
             if unl:
-                filter['trigger']['unless-domain'] = unl
+                filter_obj['trigger']['unless-domain'] = unl
 
     if contentType:
         if contentType & RegExpFilter_typeMap['DOCUMENT'] and isException:
@@ -239,18 +239,18 @@ def regex_filters(origText, regexpSource, contentType, matchCase, domains, first
         if contentType & RegExpFilter_typeMap['POPUP']:
             rt.append('popup')
         if rt:
-            filter['trigger']['resource-type'] = rt
+            filter_obj['trigger']['resource-type'] = rt
 
         if len(rt) > 1 and 'document' in rt and not (firstParty or thirdParty):
             # Split the rule up into 2 to only block third-party documents
-            splitFilter = copy.deepcopy(filter)
+            splitFilter = copy.deepcopy(filter_obj)
             splitFilter['trigger']['resource-type'] = ['document']
             splitFilter['trigger']['load-type'] = ['third-party']
-            filter['trigger']['resource-type'] = rt[1:]
+            filter_obj['trigger']['resource-type'] = rt[1:]
             print("Split %s into 2 rules" % origText)
-            return [filter, splitFilter]
+            return [filter_obj, splitFilter]
 
-    return [filter]
+    return [filter_obj]
 
 
 def blocking_filters(origText, regexpSource, contentType, matchCase, domains, firstParty, thirdParty, sitekeys, collapse):
