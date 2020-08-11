@@ -43,54 +43,54 @@ regex_domain_subdomain_with_protocol = '^[^:]+:(//)?([^/]+\\.)?'
 
 
 ad_urls = [
-    ABCB(ab='&ad_box_', cb={
+    ABCB(ab='&ad_box_', cb=[{
         "action": {
             "type": "block"
         },
         "trigger": {
             "url-filter": "^https?://.*&ad_box_"
         }
-    }),
-    ABCB(ab='&ad_channel=', cb={
+    }]),
+    ABCB(ab='&ad_channel=', cb=[{
         "action": {
             "type": "block"
         },
         "trigger": {
             "url-filter": "^https?://.*&ad_channel="
         }
-    }),
-    ABCB(ab='+advertorial.', cb={
+    }]),
+    ABCB(ab='+advertorial.', cb=[{
         "action": {
             "type": "block"
         },
         "trigger": {
             "url-filter": "^https?://.*\\+advertorial\\."
         }
-    }),
-    ABCB(ab='&prvtof=*&poru=', cb={
+    }]),
+    ABCB(ab='&prvtof=*&poru=', cb=[{
         "action": {
             "type": "block"
         },
         "trigger": {
             "url-filter": "^https?://.*&prvtof=.*&poru="
         }
-    }),
-    ABCB(ab='-ad-180x150px.', cb={
+    }]),
+    ABCB(ab='-ad-180x150px.', cb=[{
         "action": {
             "type": "block"
         },
         "trigger": {
             "url-filter": "^https?://.*-ad-180x150px\\."
         }
-    }),
-    ABCB(ab='://findnsave.*.*/api/groupon.json?', cb={
+    }]),
+    ABCB(ab='://findnsave.*.*/api/groupon.json?', cb=[{
         "action": {
             "type": "block"
         },
         "trigger": {
             "url-filter": "://findnsave\\..*\\..*/api/groupon\\.json\\?"
         }
-    }),
+    }]),
 ]
 
 
@@ -602,3 +602,48 @@ class TestSubdomainBlockExample(object):
         assert pattern.match('https://accounts.youtube.com') is None
         assert pattern.match('https://ss.youtube.com') is None
         assert pattern.match('https://s.youtube.co.uk') is None
+
+
+# There are situations where 1 ABP filter turns into 2 content blocker rules
+#
+# The splitting document rules comes from rules that block full page loads due to the nature of ABP filter
+# lists having both `document` and `subdocument`, whereas content blockers only have `document`
+#
+# For more info, see https://github.com/brave/ab2cb/commit/edfd68dfe618b8fd71060044292a56f8b2f88b87
+class TestSplitRules(object):
+    out = abcb_from_text('@@||apis.google.com^$script,subdocument,domain=putlocker.ninja|putlocker.style|putlockers.mn|putlockers.movie')
+
+    def test_creates_two_rules(self):
+        assert len(self.out.cb) == 2
+
+    def test_action(self):
+        assert self.out.cb[0]['action']['type'] == 'ignore-previous-rules'
+        assert self.out.cb[1]['action']['type'] == 'ignore-previous-rules'
+
+    def test_url_filter(self):
+        url_filter = self.out.cb[0]['trigger']['url-filter']
+        pattern = re.compile(url_filter)
+
+        assert pattern.match('https://apis.google.com') is not None
+        assert pattern.match('https://bubba.apis.google.com') is not None
+        assert pattern.match('https://api.google.com') is None
+        assert pattern.match('https://pis.google.com') is None
+        assert pattern.match('https://apis.google.co.uk') is None
+
+    def test_if_domain(self):
+        if_domain_list = self.out.cb[0]['trigger']['if-domain']
+        assert '*putlocker.ninja' in if_domain_list
+        assert '*putlocker.style' in if_domain_list
+        assert '*putlockers.mn' in if_domain_list
+        assert '*putlockers.movie' in if_domain_list
+
+        if_domain_list = self.out.cb[1]['trigger']['if-domain']
+        assert '*putlocker.ninja' in if_domain_list
+        assert '*putlocker.style' in if_domain_list
+        assert '*putlockers.mn' in if_domain_list
+        assert '*putlockers.movie' in if_domain_list
+
+    def test_resource_type(self):
+        assert self.out.cb[0]['trigger']['resource-type'][0] == 'script'
+        assert self.out.cb[1]['trigger']['resource-type'][0] == 'document'
+        assert self.out.cb[1]['trigger']['load-type'][0] == 'third-party'
