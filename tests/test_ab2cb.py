@@ -23,8 +23,8 @@ class ABCB(object):
 
     def __eq__(self, other):
         # uncomment when debugging tests :)
-        # pprint.pprint(self.cb)
-        # pprint.pprint(other.cb)
+        pprint.pprint(self.cb)
+        pprint.pprint(other.cb)
         return (self.ab == other.ab) and (self.cb == other.cb)
 
     def __ne__(self, other):
@@ -48,7 +48,7 @@ ad_urls = [
             "type": "block"
         },
         "trigger": {
-            "url-filter": "^https?://.*&ad_box_"
+            "url-filter": "&ad_box_"
         }
     }]),
     ABCB(ab='&ad_channel=', cb=[{
@@ -56,7 +56,7 @@ ad_urls = [
             "type": "block"
         },
         "trigger": {
-            "url-filter": "^https?://.*&ad_channel="
+            "url-filter": "&ad_channel="
         }
     }]),
     ABCB(ab='+advertorial.', cb=[{
@@ -64,7 +64,7 @@ ad_urls = [
             "type": "block"
         },
         "trigger": {
-            "url-filter": "^https?://.*\\+advertorial\\."
+            "url-filter": "\\+advertorial\\."
         }
     }]),
     ABCB(ab='&prvtof=*&poru=', cb=[{
@@ -72,7 +72,7 @@ ad_urls = [
             "type": "block"
         },
         "trigger": {
-            "url-filter": "^https?://.*&prvtof=.*&poru="
+            "url-filter": "&prvtof=.*&poru="
         }
     }]),
     ABCB(ab='-ad-180x150px.', cb=[{
@@ -80,7 +80,7 @@ ad_urls = [
             "type": "block"
         },
         "trigger": {
-            "url-filter": "^https?://.*-ad-180x150px\\."
+            "url-filter": "-ad-180x150px\\."
         }
     }]),
     ABCB(ab='://findnsave.*.*/api/groupon.json?', cb=[{
@@ -522,11 +522,11 @@ class TestABCB(object):
         assert a != b
 
 
-# @pytest.mark.parametrize('abcb', ad_urls)
-# class TestAdURLs(object):
-#     def test_url(self, abcb):
-#         out = abcb_from_text(abcb.ab)
-#         assert out == abcb
+@pytest.mark.parametrize('abcb', ad_urls)
+class TestAdURLs(object):
+    def test_url(self, abcb):
+        out = abcb_from_text(abcb.ab)
+        assert out == abcb
 
 
 # @pytest.mark.parametrize('abcb', element_hiding)
