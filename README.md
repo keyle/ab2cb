@@ -44,18 +44,36 @@ optional arguments:
 ```
 
 
-##  To Run Without Installing
+##  To Run
 
 1. Clone this repo
 2. cd to the repo
-3. Activate with the command: `. bin/activate.sh`
-4. Make the dev environment with the command: `make dev`
-5. Run `ab2cb -h`
+3. Setup virtualenv with Python 3 (if needed)
+    ```shell
+    python3 -m venv venv
+    source ./venv/bin/activate
+    pip install tox pep8
+    ```
+4. Activate with the command: `. bin/activate.sh`
+5. Make the dev environment with the command: `make dev`
+6. Run `ab2cb -h` to verify executable works
 
+When done, you can close things out
+1. Deactivate with `. bin/deactivate.sh`
+2. `deactivate` virtualenv
 
 ## Testing
 
-Assuming you have `tox` and `pytest` installed, just type `tox` in this directory.
+1. Setup virtualenv with Python 3 (if needed)
+	```shell
+	python3 -m venv venv
+	source ./venv/bin/activate
+	pip install tox pep8
+	```
+2. Run the tests
+	```shell
+	make test
+	```
 
 
 ### Testing filters
@@ -67,25 +85,25 @@ There is a small JavaScript file in the test directory called `check.js` that wi
 
 ## References
 
-Safari Extensibility: Content Blocking and Shared Links  
-WWDC 2015 Video  
+Safari Extensibility: Content Blocking and Shared Links
+WWDC 2015 Video
 https://developer.apple.com/videos/wwdc/2015/?id=511
 
-EasyList  
+EasyList
 https://easylist.adblockplus.org/en/
 
-Writing Adblock Plus filters  
+Writing Adblock Plus filters
 https://adblockplus.org/en/filters
 
 Introduction to WebKit Content Blockers
-Surfin' Safari Blog   
+Surfin' Safari Blog
 https://www.webkit.org/blog/3476/content-blockers-first-look/
 
-AdBlock Plus  
-filterClasses.js  
+AdBlock Plus
+filterClasses.js
 https://github.com/adblockplus/adblockplus/blob/master/lib/filterClasses.js
 
-WebKit Tests  
-ContentExtensions.cpp  
+WebKit Tests
+ContentExtensions.cpp
 http://trac.webkit.org/browser/trunk/Tools/TestWebKitAPI/Tests/WebCore/ContentExtensions.cpp
 

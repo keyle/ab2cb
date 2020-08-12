@@ -49,7 +49,7 @@ def parse_opts(argv, stdin=None, stdout=None, stderr=None):
         metavar='FILE',
         help='Save converted text to FILE. If not given, output to stdout.'
     )
-    
+
     parser.add_argument(
         '--output-rules',
         dest='output_rules',
@@ -64,7 +64,7 @@ def parse_opts(argv, stdin=None, stdout=None, stderr=None):
         default=False,
         help='Strip all whitespace from the generated file.'
     )
-    
+
     parser.add_argument(
         '--no-css',
         dest='no_css',
