@@ -1,6 +1,6 @@
 # ab2cb: convert AdBlock Plus content filters to Safari Content Blockers
 
-This is a work in progress! It is not perfect.
+There are a handful of [known issues](https://github.com/brave/ab2cb/pull/5#issuecomment-672247647) with this script. It's recommended to use [`adblock-rust`](https://github.com/brave/adblock-rust)'s content blocking conversion support instead.
 
 The `ab2cb` script reads filter lists as used by AdBlock Plus and produces a JSON Content Blocker file.
 
