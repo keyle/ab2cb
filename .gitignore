@@ -5,6 +5,9 @@ __pycache__/
 # C extensions
 *.so
 
+easylist.txt
+rules.json
+
 # Distribution / packaging
 .Python
 env/
