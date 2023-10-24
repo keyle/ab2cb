@@ -1,5 +1,9 @@
 #!/bin/zsh
-
+python3 -m venv venv
+source ./venv/bin/activate
 . bin/activate.sh
-curl -s https://easylist.to/easylist/easylist.txt
+make dev
+pip install .
+wget https://easylist.to/easylist/easylist.txt
 ab2cb -o rules.json easylist.txt
+rm easylist.txt
