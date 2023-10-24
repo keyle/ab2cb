@@ -56,7 +56,8 @@ optional arguments:
     ```
 4. Activate with the command: `. bin/activate.sh`
 5. Make the dev environment with the command: `make dev`
-6. Run `ab2cb -h` to verify executable works
+6. `pip install .`
+7. Run `ab2cb -h` to verify executable works
 
 When done, you can close things out
 1. Deactivate with `. bin/deactivate.sh`
